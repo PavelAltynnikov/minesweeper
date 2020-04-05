@@ -12,48 +12,24 @@ from cell import Cell
 
 
 class GameWindow(Form):
-    def __init__(self):
+    def __init__(self, field):
         self._indent_top = 50
         self._indent_left = 10
+        self._indent_right = 10
         self._indent_bottom = 10
-        self._field_size = 5
-        self._cell_side = 40
+        self._cell_side = 30
         self._cell_size = Size(self._cell_side, self._cell_side)
+        self._field = field
         self._cells = []
         self.FormBorderStyle = FormBorderStyle.Fixed3D
 
-        # 9х9=81    -> 10 бомб  -> 12.3%
-        # 16х16=256 -> 40 бомб  -> 15.6%
-        # 30х16=480 -> 99 бомб  -> 20.6%
-        # 30х30=900 -> 150 бомб -> 16.6%
-        # хардкор мод - таймер идёт на убыль
-        self._bombs_count = 10
-        self._bombs = [[int(round(random.uniform(0, 1) - 0.4)) for _ in range(self._field_size)] for _ in range(self._field_size)]
-        self._hints = [[0 for _ in range(self._field_size)] for _ in range(self._field_size)]
-        for y, row in enumerate(self._bombs):
-            for x, cell in enumerate(row):
-                if cell:
-                    self._hints[y][x] = 'B'
-                else:
-                    for dy in (-1, 0, 1):
-                        Y = y + dy
-                        if 0 <= Y < self._field_size:
-                            for dx in (-1, 0, 1):
-                                X = x + dx
-                                if 0 <= X < self._field_size:
-                                    result = self._bombs[y + dy][x + dx]
-                                    if result == 1:
-                                        self._hints[y][x] += 1
-
-        self._game_over = False
-
-        self.CenterToScreen()
         self._initialize_components()
         self._run_timer()
+        self.CenterToScreen()
 
     def _initialize_components(self):
-        self.Size = self._generate_window_size()
         self.MainMenuStrip = self._generate_menu_strip()
+        self.Size = self._generate_window_size()
         self._create_buttons()
 
         self._flags_description = Label()
@@ -64,7 +40,7 @@ class GameWindow(Form):
 
         self._flags_counter = Label()
         self._flags_counter.Parent = self
-        self._flags_counter.Text = str(self._bombs_count)
+        self._flags_counter.Text = str(self._field.bombs)
         self._flags_counter.Location = Point(50, 30)
         self._flags_counter.Size = Size(30, 20)
 
@@ -72,7 +48,7 @@ class GameWindow(Form):
         self._label_timer.Parent = self
         self._label_timer.Text = '0'
         self._label_timer.TextAlign = ContentAlignment.MiddleRight
-        self._label_timer.Location = Point(170, 30)
+        self._label_timer.Location = Point(self.Size.Width - 60, 30)
         self._label_timer.Size = Size(40, 20)
 
     def _run_timer(self):
@@ -82,7 +58,7 @@ class GameWindow(Form):
 
     def _timer_update(self):
         i = 0
-        while not self._game_over:
+        while not self._field.game_over:
             time.sleep(1)
             i += 1
             self._label_timer.Text = str(i)
@@ -105,21 +81,21 @@ class GameWindow(Form):
         return _menu_strip
 
     def _generate_window_size(self):
-        width = self._field_size * self._cell_side + self._indent_left * 2 + 10
-        height = self._field_size * self._cell_side + self._indent_top + self._indent_bottom + 33
+        width = self._indent_left + self._field.columns * self._cell_side + self._indent_right + 10
+        height = self._indent_top + self._field.rows * self._cell_side + self._indent_bottom + 33
         return Size(width, height)
 
     def _create_buttons(self):
-        start_location = (self._indent_left, self._indent_top)
-        for y in range(self._field_size):
-            for x in range(self._field_size):
-                cell = Cell((x, y))
+        for y in range(self._field.rows):
+            for x in range(self._field.columns):
+                cell = Cell((y, x))
                 cell.Parent = self
                 cell.Size = self._cell_size
-                cell.Location = Point(start_location[0] + y * self._cell_side, start_location[1] + x * self._cell_side)
-                cell.hidden_value = str(self._hints[y][x])
+                cell.Location = Point(self._indent_left + x * self._cell_side,
+                                      self._indent_top + y * self._cell_side)
+                # cell.hidden_value = str(self._field.get_cell_value(x, y))
                 cell.FlatStyle = FlatStyle.Standard
-                cell.Click += self._on_click_game_button
+                cell.Click += self._on_click_game_cell
                 cell.MouseDown += self._on_mouse_down
                 cell.GotFocus += self._focus
                 self._cells.append(cell)
@@ -127,15 +103,15 @@ class GameWindow(Form):
     def _new_game_click(self, sender, args):
         pass
 
-    def _on_click_game_button(self, sender, args):
+    def _on_click_game_cell(self, sender, args):
         if not sender.is_active:
-            if sender.hidden_value == 'B':
+            if self._field.get_cell_value(sender.location) == 'B':
                 for cell in self._cells:
                     if cell.hidden_value == 'B':
                         if not cell.is_active:
                             self._change_view(cell, is_bomb=True)
                     cell.Enabled = False
-                    self._game_over = True
+                    self._field.game_over = True
             else:
                 self._change_view(sender)
         else:
@@ -156,14 +132,14 @@ class GameWindow(Form):
         if args.Button == MouseButtons.Right:
             if not sender.is_active:
                 if sender.Text != 'F':
-                    if self._bombs_count > 0:
+                    if self._field.bombs > 0:
                         sender.Text = 'F'
-                        self._bombs_count -= 1
-                        self._flags_counter.Text = str(self._bombs_count)
+                        self._field.bombs -= 1
+                        self._flags_counter.Text = str(self._field.bombs)
                 else:
                     sender.Text = ''
-                    self._bombs_count += 1
-                    self._flags_counter.Text = str(self._bombs_count)
+                    self._field.bombs += 1
+                    self._flags_counter.Text = str(self._field.bombs)
 
     def _focus(self, sender, args):
         sender.NotifyDefault(False)

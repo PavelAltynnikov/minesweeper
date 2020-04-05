@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import clr
 clr.AddReference('System.Windows.Forms')
 from System.Windows.Forms import Button
@@ -19,6 +20,8 @@ class Cell(Button):
 
     @property
     def location(self):
+        '''надо переименовать чтобы не было путаницы с Location
+        '''
         return self._location
 
     @property
