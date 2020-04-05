@@ -6,7 +6,7 @@ class Field(object):
     TEST = {
         'rows': 4,
         'columns': 5,
-        'bombs': 6
+        'bombs': 5
     }
 
     EASY = {
@@ -15,7 +15,7 @@ class Field(object):
         'bombs': 10
     }
 
-    MEDIUM = {
+    NORMAL = {
         'rows': 16,
         'columns': 16,
         'bombs': 40
@@ -68,7 +68,7 @@ class Field(object):
                     if 0 <= x < self._columns:
                         if self._bombs[y][x]:
                             count += 1
-        return count
+        return str(count)
 
     @property
     def rows(self):
@@ -99,8 +99,12 @@ class Field(object):
     def game_over(self, value):
         self._game_over = value
 
-    def get_cell_value(self, location):
-        return self._hints[location[1]][location[0]]
+    def get_cell_value(self, y, x):
+        value = self._hints[y][x]
+        if value == '0':
+            return ''
+        else:
+            return value
 
     @staticmethod
     def test_print(lst):

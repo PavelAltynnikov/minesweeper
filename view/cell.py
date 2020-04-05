@@ -5,10 +5,19 @@ from System.Windows.Forms import Button
 
 
 class Cell(Button):
-    def __init__(self, location):
+    def __init__(self, y, x):
+        self._y = y
+        self._x = x
         self._active = False
-        self._location = location
         self._hidden_value = None
+
+    @property
+    def y(self):
+        return self._y
+
+    @property
+    def x(self):
+        return self._x
 
     @property
     def is_active(self):
@@ -17,17 +26,3 @@ class Cell(Button):
     @is_active.setter
     def is_active(self, value):
         self._active = value
-
-    @property
-    def location(self):
-        '''надо переименовать чтобы не было путаницы с Location
-        '''
-        return self._location
-
-    @property
-    def hidden_value(self):
-        return self._hidden_value
-
-    @hidden_value.setter
-    def hidden_value(self, value):
-        self._hidden_value = value

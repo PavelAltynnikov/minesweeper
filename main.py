@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import sys
 sys.path.append(r'D:\Development\Programming\Python\IronPython\minesweeper')
+from controller.game import Game
 from model.field import Field
-from view.game_window import GameWindow
 
-game = GameWindow(Field(Field.TEST))
-game.ShowDialog()
+game = Game()
+game.start(Field(Field.EASY))

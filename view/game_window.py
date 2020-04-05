@@ -4,15 +4,15 @@ import time
 from threading import Thread
 import clr
 clr.AddReference('System.Windows.Forms')
-from System.Windows.Forms import (Form, FormBorderStyle, FlatStyle, Label, MenuStrip, MouseEventArgs, MouseButtons, ToolStripMenuItem,
-                                  ToolStripItemCollection)
+from System.Windows.Forms import (CheckBox, Form, FormBorderStyle, FlatStyle, Label, MenuStrip, ToolStripControlHost,
+                                  MouseEventArgs, MouseButtons, ToolStripMenuItem, ToolStripItemCollection)
 clr.AddReference('System.Drawing')
 from System.Drawing import ContentAlignment, Size, Point, Color
 from cell import Cell
 
 
 class GameWindow(Form):
-    def __init__(self, field):
+    def __init__(self, field, game):
         self._indent_top = 50
         self._indent_left = 10
         self._indent_right = 10
@@ -21,8 +21,8 @@ class GameWindow(Form):
         self._cell_size = Size(self._cell_side, self._cell_side)
         self._field = field
         self._cells = []
+        self._game = game
         self.FormBorderStyle = FormBorderStyle.Fixed3D
-
         self._initialize_components()
         self._run_timer()
         self.CenterToScreen()
@@ -64,21 +64,38 @@ class GameWindow(Form):
             self._label_timer.Text = str(i)
 
     def _generate_menu_strip(self):
-        _menu_strip = MenuStrip()
-        _menu_strip.Parent = self
-        _file_item = ToolStripMenuItem("&File")
-        _new_game = ToolStripMenuItem("&New game", None)
-        _easy = ToolStripMenuItem("&Easy", None)
-        _normal = ToolStripMenuItem("&Normal", None)
-        _hard = ToolStripMenuItem("&Hard", None)
-        _nightmare = ToolStripMenuItem("&Nightmare", None)
-        _new_game.DropDownItems.Add(_easy)
-        _new_game.DropDownItems.Add(_normal)
-        _new_game.DropDownItems.Add(_hard)
-        _new_game.DropDownItems.Add(_nightmare)
-        _file_item.DropDownItems.Add(_new_game)
-        _menu_strip.Items.Add(_file_item)
-        return _menu_strip
+        menu_strip = MenuStrip()
+        menu_strip.Parent = self
+
+        file_item = ToolStripMenuItem("&File")
+        menu_strip.Items.Add(file_item)
+
+        new_game = ToolStripMenuItem("&New game")
+        file_item.DropDownItems.Add(new_game)
+
+        easy = ToolStripMenuItem("&Easy")
+        easy.Click += self._game.new_easy_game
+        new_game.DropDownItems.Add(easy)
+
+        normal = ToolStripMenuItem("&Normal")
+        normal.Click += self._game.new_normal_game
+        new_game.DropDownItems.Add(normal)
+
+        hard = ToolStripMenuItem("&Hard")
+        hard.Click += self._game.new_hard_game
+        new_game.DropDownItems.Add(hard)
+
+        checkBox = CheckBox()
+        checkBox.Text = "Nightmare"
+        checkBox.Checked = False
+        nightmare = ToolStripControlHost(checkBox)
+        new_game.DropDownItems.Add(nightmare)
+
+        _exit = ToolStripMenuItem("&Exit")
+        _exit.Click += self._game.close
+        file_item.DropDownItems.Add(_exit)
+
+        return menu_strip
 
     def _generate_window_size(self):
         width = self._indent_left + self._field.columns * self._cell_side + self._indent_right + 10
@@ -88,12 +105,11 @@ class GameWindow(Form):
     def _create_buttons(self):
         for y in range(self._field.rows):
             for x in range(self._field.columns):
-                cell = Cell((y, x))
+                cell = Cell(y, x)
                 cell.Parent = self
                 cell.Size = self._cell_size
                 cell.Location = Point(self._indent_left + x * self._cell_side,
                                       self._indent_top + y * self._cell_side)
-                # cell.hidden_value = str(self._field.get_cell_value(x, y))
                 cell.FlatStyle = FlatStyle.Standard
                 cell.Click += self._on_click_game_cell
                 cell.MouseDown += self._on_mouse_down
@@ -105,17 +121,18 @@ class GameWindow(Form):
 
     def _on_click_game_cell(self, sender, args):
         if not sender.is_active:
-            if self._field.get_cell_value(sender.location) == 'B':
-                for cell in self._cells:
-                    if cell.hidden_value == 'B':
-                        if not cell.is_active:
-                            self._change_view(cell, is_bomb=True)
-                    cell.Enabled = False
-                    self._field.game_over = True
+            if self._field.get_cell_value(sender.y, sender.x) == 'B':
+                self._show_and_active_all_bombs()
             else:
                 self._change_view(sender)
-        else:
-            pass
+
+    def _show_and_active_all_bombs(self):
+        for cell in self._cells:
+            if self._field.get_cell_value(cell.y, cell.x) == 'B':
+                if not cell.is_active:
+                    self._change_view(cell, is_bomb=True)
+            cell.Enabled = False
+            self._field.game_over = True
 
     def _change_view(self, cell, is_bomb=False):
         cell.is_active = True
@@ -123,7 +140,7 @@ class GameWindow(Form):
             cell.BackColor = Color.FromArgb(250, 0, 0)
         else:
             cell.BackColor = Color.FromArgb(192, 192, 192)
-        cell.Text = cell.hidden_value
+        cell.Text = self._field.get_cell_value(cell.y, cell.x)
         cell.FlatAppearance.BorderSize = 1
         cell.FlatAppearance.BorderColor = Color.FromArgb(128, 128, 128)
         cell.FlatStyle = FlatStyle.Flat
@@ -132,7 +149,7 @@ class GameWindow(Form):
         if args.Button == MouseButtons.Right:
             if not sender.is_active:
                 if sender.Text != 'F':
-                    if self._field.bombs > 0:
+                    if self._field.bombs > 0: # нельзя ссылаться и изменять это свойство
                         sender.Text = 'F'
                         self._field.bombs -= 1
                         self._flags_counter.Text = str(self._field.bombs)
