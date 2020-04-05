@@ -38,17 +38,14 @@ class Field(object):
         self._game_over = False
 
     def _generate_bomds(self):
-        bombs = []
-        max_count_bombs = self._count_bombs
-        for y in range(self._rows):
-            row = []
-            for x in range(self._columns):
-                if max_count_bombs:
-                    row.append(int(round(random.uniform(0, 1))))
-                    max_count_bombs -= 1
-                else:
-                    row.append(0)
-            bombs.append(row)
+        bombs = [[0 for x in range(self._columns)] for y in range(self._rows)]
+        for _ in range(self._count_bombs):
+            while True:
+                y = random.randrange(self._rows)
+                x = random.randrange(self._columns)
+                if not bombs[y][x]:
+                    bombs[y][x] = 1
+                    break
         return bombs
 
     def _generate_hints(self):
@@ -58,18 +55,18 @@ class Field(object):
                 if cell:
                     hints[y][x] = 'B'
                 else:
-                    hints[y][x] = self._find_bombs_around(y, x)
+                    hints[y][x] = self._find_bombs_around(x, y)
         return hints
 
-    def _find_bombs_around(self, y, x):
+    def _find_bombs_around(self, current_x, current_y):
         count = 0
         for dy in (-1, 0, 1):
-            Y = y + dy
-            if 0 <= Y < self._rows:
+            y = current_y + dy
+            if 0 <= y < self._rows:
                 for dx in (-1, 0, 1):
-                    X = x + dx
-                    if 0 <= X < self._columns:
-                        if self._bombs[Y][X]:
+                    x = current_x + dx
+                    if 0 <= x < self._columns:
+                        if self._bombs[y][x]:
                             count += 1
         return count
 
@@ -95,6 +92,7 @@ class Field(object):
 
     @property
     def game_over(self):
+        # отправь в game
         return self._game_over
 
     @game_over.setter
