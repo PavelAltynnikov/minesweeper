@@ -99,12 +99,19 @@ class Field(object):
     def game_over(self, value):
         self._game_over = value
 
-    def get_cell_value(self, y, x):
+    def get_hint_value(self, y, x):
         value = self._hints[y][x]
         if value == '0':
             return ''
         else:
             return value
+
+    def is_bomb(self, y, x):
+        value = self._bombs[y][x]
+        if value:
+            return True
+        else:
+            return False
 
     @staticmethod
     def test_print(lst):

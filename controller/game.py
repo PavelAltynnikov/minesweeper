@@ -13,10 +13,24 @@ from view.game_window import GameWindow
 class Game(object):
     def __init__(self):
         self._game_over = False
+        self._active_bombs = 0
+        self._defused_bombs = 0
+
+    @property
+    def defused_bombs(self):
+        return self._defused_bombs
+
+    @defused_bombs.setter
+    def defused_bombs(self, value):
+        self._defused_boms = value
+        # if self._defused_bombs == 
 
     def start(self, complexity):
         minesweeper = GameWindow(complexity, self)
         minesweeper.ShowDialog()
+
+    def is_game_over(self):
+        pass
 
     def new_easy_game(self, sender, args):
         form = sender.OwnerItem.OwnerItem.Owner.Parent

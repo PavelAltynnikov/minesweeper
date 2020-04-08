@@ -121,14 +121,14 @@ class GameWindow(Form):
 
     def _on_click_game_cell(self, sender, args):
         if not sender.is_active:
-            if self._field.get_cell_value(sender.y, sender.x) == 'B':
+            if self._field.get_hint_value(sender.y, sender.x) == 'B':
                 self._show_and_active_all_bombs()
             else:
                 self._change_view(sender)
 
     def _show_and_active_all_bombs(self):
         for cell in self._cells:
-            if self._field.get_cell_value(cell.y, cell.x) == 'B':
+            if self._field.get_hint_value(cell.y, cell.x) == 'B':
                 if not cell.is_active:
                     self._change_view(cell, is_bomb=True)
             cell.Enabled = False
@@ -140,7 +140,7 @@ class GameWindow(Form):
             cell.BackColor = Color.FromArgb(250, 0, 0)
         else:
             cell.BackColor = Color.FromArgb(192, 192, 192)
-        cell.Text = self._field.get_cell_value(cell.y, cell.x)
+        cell.Text = self._field.get_hint_value(cell.y, cell.x)
         cell.FlatAppearance.BorderSize = 1
         cell.FlatAppearance.BorderColor = Color.FromArgb(128, 128, 128)
         cell.FlatStyle = FlatStyle.Flat
@@ -149,10 +149,11 @@ class GameWindow(Form):
         if args.Button == MouseButtons.Right:
             if not sender.is_active:
                 if sender.Text != 'F':
-                    if self._field.bombs > 0: # нельзя ссылаться и изменять это свойство
+                    if self._game.defused_bombs < self._field.bombs:
                         sender.Text = 'F'
-                        self._field.bombs -= 1
-                        self._flags_counter.Text = str(self._field.bombs)
+                        if self._field.is_bomb(sender.y, sender.x):
+                            self._game.defused_bombs -= 1
+                            self._flags_counter.Text = str(self._field.bombs)
                 else:
                     sender.Text = ''
                     self._field.bombs += 1
