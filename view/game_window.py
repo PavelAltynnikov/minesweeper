@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
-import random
-import time
-from threading import Thread
 import clr
 clr.AddReference('System.Windows.Forms')
 from System.Windows.Forms import (CheckBox, Form, FormBorderStyle, FlatStyle, Label, MenuStrip, ToolStripControlHost,
-                                  MouseEventArgs, MouseButtons, ToolStripMenuItem, ToolStripItemCollection, TextRenderer)
+                                  MouseButtons, ToolStripMenuItem, TextRenderer)
 clr.AddReference('System.Drawing')
 from System.Drawing import ContentAlignment, Size, Point, Color
 from view.cell import Cell
+from timer import Timer
 
 
 class GameWindow(Form):
@@ -24,8 +22,9 @@ class GameWindow(Form):
         self._rows = rows
         self._columns = columns
         self.FormBorderStyle = FormBorderStyle.Fixed3D
+        timer = Timer(self.timer_update, self._game)
+        timer.start()
         self._initialize_components(rows, columns)
-        self._run_timer()
         self.CenterToScreen()
 
     def _initialize_components(self, rows, columns):
@@ -58,17 +57,8 @@ class GameWindow(Form):
         self._label_timer.Location = Point(self.Size.Width - 60, 30)
         self._label_timer.Size = Size(40, 20)
 
-    def _run_timer(self):
-        thread = Thread(target=self._timer_update)
-        thread.daemon = True
-        thread.start()
-
-    def _timer_update(self):
-        i = 0
-        while not self._game.is_game_over:
-            time.sleep(1)
-            i += 1
-            self._label_timer.Text = str(i)
+    def timer_update(self, value):
+        self._label_timer.Text = str(value)
 
     def _generate_menu_strip(self):
         menu_strip = MenuStrip()

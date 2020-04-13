@@ -28,18 +28,21 @@ class Game(object):
         form = sender.OwnerItem.OwnerItem.Owner.Parent
         form.Hide()
         form.Close()
+        self.is_game_over = False
         self.start(Field(Field.EASY))
 
     def new_normal_game(self, sender, args):
         form = sender.OwnerItem.OwnerItem.Owner.Parent
         form.Hide()
         form.Close()
+        self.is_game_over = False
         self.start(Field(Field.NORMAL))
 
     def new_hard_game(self, sender, args):
         form = sender.OwnerItem.OwnerItem.Owner.Parent
         form.Hide()
         form.Close()
+        self.is_game_over = False
         self.start(Field(Field.HARD))
 
     def game_over(self, game_window):
