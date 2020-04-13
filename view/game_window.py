@@ -5,43 +5,50 @@ from threading import Thread
 import clr
 clr.AddReference('System.Windows.Forms')
 from System.Windows.Forms import (CheckBox, Form, FormBorderStyle, FlatStyle, Label, MenuStrip, ToolStripControlHost,
-                                  MouseEventArgs, MouseButtons, ToolStripMenuItem, ToolStripItemCollection)
+                                  MouseEventArgs, MouseButtons, ToolStripMenuItem, ToolStripItemCollection, TextRenderer)
 clr.AddReference('System.Drawing')
 from System.Drawing import ContentAlignment, Size, Point, Color
-from cell import Cell
+from view.cell import Cell
 
 
 class GameWindow(Form):
-    def __init__(self, field, game):
+    def __init__(self, rows, columns, game):
         self._indent_top = 50
         self._indent_left = 10
         self._indent_right = 10
         self._indent_bottom = 10
         self._cell_side = 30
         self._cell_size = Size(self._cell_side, self._cell_side)
-        self._field = field
         self._cells = []
         self._game = game
+        self._rows = rows
+        self._columns = columns
         self.FormBorderStyle = FormBorderStyle.Fixed3D
-        self._initialize_components()
+        self._initialize_components(rows, columns)
         self._run_timer()
         self.CenterToScreen()
 
-    def _initialize_components(self):
+    def _initialize_components(self, rows, columns):
         self.MainMenuStrip = self._generate_menu_strip()
-        self.Size = self._generate_window_size()
-        self._create_buttons()
+        self.Size = self._generate_window_size(rows, columns)
+        self._create_buttons(rows, columns)
 
         self._flags_description = Label()
         self._flags_description.Parent = self
-        self._flags_description.Text = 'Флаги:'
+        self._flags_description.Text = 'Flags:'
         self._flags_description.Location = Point(10, 30)
-        self._flags_description.Size = Size(40, 20)
+        self._flags_description.Size = TextRenderer.MeasureText(self._flags_description.Text, self._flags_description.DefaultFont)
+
+        self._result = Label()
+        self._result.Parent = self
+        self._result.Text = ''
+        self._result.Size = TextRenderer.MeasureText(self._result.Text, self._result.DefaultFont)
+        self._result.Location = Point(self.Size.Width / 2 - self._result.Size.Width / 2 - 5, 30)
 
         self._flags_counter = Label()
         self._flags_counter.Parent = self
-        self._flags_counter.Text = str(self._field.bombs)
-        self._flags_counter.Location = Point(50, 30)
+        self._flags_counter.Text = str(self._game.flags_count)
+        self._flags_counter.Location = Point(45, 30)
         self._flags_counter.Size = Size(30, 20)
 
         self._label_timer = Label()
@@ -58,7 +65,7 @@ class GameWindow(Form):
 
     def _timer_update(self):
         i = 0
-        while not self._field.game_over:
+        while not self._game.is_game_over:
             time.sleep(1)
             i += 1
             self._label_timer.Text = str(i)
@@ -97,70 +104,78 @@ class GameWindow(Form):
 
         return menu_strip
 
-    def _generate_window_size(self):
-        width = self._indent_left + self._field.columns * self._cell_side + self._indent_right + 10
-        height = self._indent_top + self._field.rows * self._cell_side + self._indent_bottom + 33
+    def _generate_window_size(self, rows, columns):
+        width = self._indent_left + columns * self._cell_side + self._indent_right + 10
+        height = self._indent_top + rows * self._cell_side + self._indent_bottom + 33
         return Size(width, height)
 
-    def _create_buttons(self):
-        for y in range(self._field.rows):
-            for x in range(self._field.columns):
+    def _create_buttons(self, rows, columns):
+        for y in range(rows):
+            row = []
+            for x in range(columns):
                 cell = Cell(y, x)
                 cell.Parent = self
                 cell.Size = self._cell_size
                 cell.Location = Point(self._indent_left + x * self._cell_side,
                                       self._indent_top + y * self._cell_side)
-                cell.FlatStyle = FlatStyle.Standard
-                cell.Click += self._on_click_game_cell
-                cell.MouseDown += self._on_mouse_down
-                cell.GotFocus += self._focus
-                self._cells.append(cell)
+                cell.MouseDown += self._on_mouse_button_down_on_game_cell
+                row.append(cell)
+            self._cells.append(row)
 
-    def _new_game_click(self, sender, args):
-        pass
-
-    def _on_click_game_cell(self, sender, args):
-        if not sender.is_active:
-            if self._field.get_hint_value(sender.y, sender.x) == 'B':
-                self._show_and_active_all_bombs()
-            else:
-                self._change_view(sender)
-
-    def _show_and_active_all_bombs(self):
-        for cell in self._cells:
-            if self._field.get_hint_value(cell.y, cell.x) == 'B':
-                if not cell.is_active:
-                    self._change_view(cell, is_bomb=True)
-            cell.Enabled = False
-            self._field.game_over = True
-
+    # rename to change cell_status_and_view
     def _change_view(self, cell, is_bomb=False):
-        cell.is_active = True
         if is_bomb:
             cell.BackColor = Color.FromArgb(250, 0, 0)
         else:
             cell.BackColor = Color.FromArgb(192, 192, 192)
-        cell.Text = self._field.get_hint_value(cell.y, cell.x)
+        cell.Enabled = False
+        cell.is_checked = True
+        cell.Text = self._game._field.get_hint_value(cell.y, cell.x)
         cell.FlatAppearance.BorderSize = 1
         cell.FlatAppearance.BorderColor = Color.FromArgb(128, 128, 128)
         cell.FlatStyle = FlatStyle.Flat
 
-    def _on_mouse_down(self, sender, args):
+    def _on_mouse_button_down_on_game_cell(self, sender, args):
         if args.Button == MouseButtons.Right:
-            if not sender.is_active:
+            if not sender.is_checked:
                 if sender.Text != 'F':
-                    if self._game.defused_bombs < self._field.bombs:
+                    if self._game.flags_count:
                         sender.Text = 'F'
-                        if self._field.is_bomb(sender.y, sender.x):
-                            self._game.defused_bombs -= 1
-                            self._flags_counter.Text = str(self._field.bombs)
+                        self._game.flags_count -= 1
                 else:
                     sender.Text = ''
-                    self._field.bombs += 1
-                    self._flags_counter.Text = str(self._field.bombs)
+                    self._game.flags_count += 1
+                self._flags_counter.Text = str(self._game.flags_count)
+        elif args.Button == MouseButtons.Left:
+            if not sender.is_checked:
+                self._game.closed_cells -= 1
+                if self._game.is_bomb(sender.y, sender.x):
+                    self._game.game_over(self)
+                else:
+                    self._change_view(sender)
+                if self._game._field.get_hint_value(sender.y, sender.x) == '':
+                    self._check_neighboring_cells(sender)
+                if not self._game.closed_cells:
+                    self._game.game_over(self)
 
-    def _focus(self, sender, args):
-        sender.NotifyDefault(False)
+    def _check_neighboring_cells(self, cell):
+        for dy in (-1, 0, 1):
+            y = cell.y + dy
+            if 0 <= y < self._rows:
+                for dx in (-1, 0, 1):
+                    x = cell.x + dx
+                    if 0 <= x < self._columns:
+                        neighbro_cell = self._cells[y][x]
+                        if not neighbro_cell.is_checked:
+                            self._game.closed_cells -= 1
+                            self._change_view(neighbro_cell)
+                            if self._game._field.get_hint_value(y, x) == '':
+                                self._check_neighboring_cells(neighbro_cell)
+
+    def final_alert(self, alert):
+        self._result.Text = alert
+        self._result.Size = TextRenderer.MeasureText(self._result.Text, self._result.DefaultFont)
+        self._result.Location = Point(self.Size.Width / 2 - self._result.Size.Width / 2 - 5, 30)
 
 
 if __name__ == '__main__':

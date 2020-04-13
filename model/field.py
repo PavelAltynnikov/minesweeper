@@ -4,9 +4,9 @@ import random
 
 class Field(object):
     TEST = {
-        'rows': 4,
-        'columns': 5,
-        'bombs': 5
+        'rows': 3,
+        'columns': 4,
+        'bombs': 1
     }
 
     EASY = {
@@ -33,11 +33,11 @@ class Field(object):
         self._size = self._rows * self._columns
         self._count_bombs = complexity['bombs']
         self._found_bombs = 0
-        self._bombs = self._generate_bomds()
+        self._bombs = self._generate_bombs()
         self._hints = self._generate_hints()
         self._game_over = False
 
-    def _generate_bomds(self):
+    def _generate_bombs(self):
         bombs = [[0 for x in range(self._columns)] for y in range(self._rows)]
         for _ in range(self._count_bombs):
             while True:
@@ -90,28 +90,12 @@ class Field(object):
     def bombs(self, value):
         self._count_bombs = value
 
-    @property
-    def game_over(self):
-        # отправь в game
-        return self._game_over
-
-    @game_over.setter
-    def game_over(self, value):
-        self._game_over = value
-
     def get_hint_value(self, y, x):
         value = self._hints[y][x]
         if value == '0':
             return ''
         else:
             return value
-
-    def is_bomb(self, y, x):
-        value = self._bombs[y][x]
-        if value:
-            return True
-        else:
-            return False
 
     @staticmethod
     def test_print(lst):

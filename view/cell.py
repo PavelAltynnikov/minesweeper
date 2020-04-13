@@ -8,8 +8,7 @@ class Cell(Button):
     def __init__(self, y, x):
         self._y = y
         self._x = x
-        self._active = False
-        self._hidden_value = None
+        self._checked = False
 
     @property
     def y(self):
@@ -20,9 +19,12 @@ class Cell(Button):
         return self._x
 
     @property
-    def is_active(self):
-        return self._active
+    def is_checked(self):
+        return self._checked
 
-    @is_active.setter
-    def is_active(self, value):
-        self._active = value
+    @is_checked.setter
+    def is_checked(self, value):
+        self._checked = value
+
+    def OnGotFocus(self, *args):
+        self.NotifyDefault(False)
