@@ -1,9 +1,0 @@
-{
-    "python.pythonPath": "C:\\Python27\\python.exe",
-    "python.linting.flake8Enabled": true,
-    "python.linting.enabled": true,
-    "python.autoComplete.extraPaths": [
-        "D:\\Development\\Programming\\Python\\IronPython\\minesweeper",
-        "D:\\CLOUDS\\Dropbox\\Visual Studio Code\\ironpython-stubs\\stubs.min",
-    ],
-}
