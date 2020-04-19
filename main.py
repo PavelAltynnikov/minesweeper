@@ -5,4 +5,4 @@ from controller.game import Game
 from model.field import Field
 
 game = Game()
-game.start(Field(Field.EASY))
+game.start(Game.EASY)

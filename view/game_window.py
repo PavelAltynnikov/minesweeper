@@ -22,7 +22,8 @@ class GameWindow(Form):
         self._rows = rows
         self._columns = columns
         self.FormBorderStyle = FormBorderStyle.Fixed3D
-        timer = Timer(self.timer_update, self._game)
+        # timer = Timer(self.timer_update, self._game, None)
+        timer = Timer(self.timer_update, self._game, self._game.nightmare_mode, self)
         timer.start()
         self._initialize_components(rows, columns)
         self.CenterToScreen()
@@ -52,7 +53,7 @@ class GameWindow(Form):
 
         self._label_timer = Label()
         self._label_timer.Parent = self
-        self._label_timer.Text = '0'
+        self._label_timer.Text = str(self._game.timer)
         self._label_timer.TextAlign = ContentAlignment.MiddleRight
         self._label_timer.Location = Point(self.Size.Width - 60, 30)
         self._label_timer.Size = Size(40, 20)
@@ -82,10 +83,10 @@ class GameWindow(Form):
         hard.Click += self._game.new_hard_game
         new_game.DropDownItems.Add(hard)
 
-        checkBox = CheckBox()
-        checkBox.Text = "Nightmare"
-        checkBox.Checked = False
-        nightmare = ToolStripControlHost(checkBox)
+        self.checkBox = CheckBox()
+        self.checkBox.Text = "Nightmare"
+        self.checkBox.Checked = False
+        nightmare = ToolStripControlHost(self.checkBox)
         new_game.DropDownItems.Add(nightmare)
 
         _exit = ToolStripMenuItem("&Exit")

@@ -3,30 +3,6 @@ import random
 
 
 class Field(object):
-    TEST = {
-        'rows': 3,
-        'columns': 4,
-        'bombs': 1
-    }
-
-    EASY = {
-        'rows': 9,
-        'columns': 9,
-        'bombs': 10
-    }
-
-    NORMAL = {
-        'rows': 16,
-        'columns': 16,
-        'bombs': 40
-    }
-
-    HARD = {
-        'rows': 16,
-        'columns': 30,
-        'bombs': 99
-    }
-
     def __init__(self, complexity):
         self._rows = complexity['rows']
         self._columns = complexity['columns']
