@@ -6,7 +6,7 @@ from System.Windows.Forms import (CheckBox, Form, FormBorderStyle, FlatStyle, La
 clr.AddReference('System.Drawing')
 from System.Drawing import ContentAlignment, Size, Point, Color
 from view.cell import Cell
-from timer import Timer
+from model.timer import Timer
 
 
 class GameWindow(Form):
