@@ -53,7 +53,7 @@ class Game(object):
             self.timer = complexity['timer']
         self.closed_cells = self._field.size - self._field.bombs
         self.flags_count = self._field.bombs
-        minesweeper = GameWindow(self._field.rows, self._field.columns, self)
+        minesweeper = GameWindow(self._field.rows, self._field.columns)
         minesweeper.ShowDialog()
 
     def new_easy_game(self, sender, args):

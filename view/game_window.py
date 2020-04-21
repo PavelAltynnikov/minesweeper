@@ -10,7 +10,7 @@ from model.timer import Timer
 
 
 class GameWindow(Form):
-    def __init__(self, rows, columns, game):
+    def __init__(self, rows, columns):
         self._indent_top = 50
         self._indent_left = 10
         self._indent_right = 10
@@ -18,20 +18,20 @@ class GameWindow(Form):
         self._cell_side = 30
         self._cell_size = Size(self._cell_side, self._cell_side)
         self._cells = []
-        self._game = game
+        # self._game = game
         self._rows = rows
         self._columns = columns
         self.FormBorderStyle = FormBorderStyle.Fixed3D
         # timer = Timer(self.timer_update, self._game, None)
-        timer = Timer(self.timer_update, self._game, self._game.nightmare_mode, self)
-        timer.start()
+        # timer = Timer(self.timer_update, self._game, self._game.nightmare_mode, self)
+        # timer.start()
         self._initialize_components(rows, columns)
         self.CenterToScreen()
 
-    def _initialize_components(self, rows, columns):
+    def _initialize_components(self):
         self.MainMenuStrip = self._generate_menu_strip()
-        self.Size = self._generate_window_size(rows, columns)
-        self._create_buttons(rows, columns)
+        self.Size = self._generate_window_size()
+        self._create_buttons()
 
         self._flags_description = Label()
         self._flags_description.Parent = self
@@ -95,21 +95,21 @@ class GameWindow(Form):
 
         return menu_strip
 
-    def _generate_window_size(self, rows, columns):
-        width = self._indent_left + columns * self._cell_side + self._indent_right + 10
-        height = self._indent_top + rows * self._cell_side + self._indent_bottom + 33
+    def _generate_window_size(self):
+        width = self._indent_left + self._columns * self._cell_side + self._indent_right + 10
+        height = self._indent_top + self._rows * self._cell_side + self._indent_bottom + 33
         return Size(width, height)
 
-    def _create_buttons(self, rows, columns):
-        for y in range(rows):
+    def _create_buttons(self):
+        for y in range(self._rows):
             row = []
-            for x in range(columns):
+            for x in range(self._columns):
                 cell = Cell(y, x)
                 cell.Parent = self
                 cell.Size = self._cell_size
                 cell.Location = Point(self._indent_left + x * self._cell_side,
                                       self._indent_top + y * self._cell_side)
-                cell.MouseDown += self._on_mouse_button_down_on_game_cell
+                # cell.MouseDown += self._on_mouse_button_down_on_game_cell
                 row.append(cell)
             self._cells.append(row)
 
