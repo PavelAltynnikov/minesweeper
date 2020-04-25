@@ -8,6 +8,7 @@ NIGHTMARE - таймер идёт на убыль
 import os
 from model.field import Field
 from view.game_window import GameWindow
+from model.timer import Timer
 
 
 class Game(object):
@@ -42,18 +43,25 @@ class Game(object):
     def __init__(self):
         self._field = None
         self.is_game_over = False
-        self.nightmare_mode = False
-        self.timer = 0
+        self.nightmare_mode = True
+        # self.nightmare_mode = False
+        self.timer_start_value = 0
         self.closed_cells = 0
         self.flags_count = 0
 
     def start(self, complexity):
         self._field = Field(complexity)
         if self.nightmare_mode:
-            self.timer = complexity['timer']
+            self.timer_start_value = complexity['timer']
         self.closed_cells = self._field.size - self._field.bombs
         self.flags_count = self._field.bombs
+
         minesweeper = GameWindow(self._field.rows, self._field.columns)
+        # minesweeper.flags_update()
+
+        timer = Timer(minesweeper.timer_update, self.timer_start_value, self.nightmare_mode)
+        timer.start()
+
         minesweeper.ShowDialog()
 
     def new_easy_game(self, sender, args):

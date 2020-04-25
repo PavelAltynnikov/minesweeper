@@ -4,31 +4,23 @@ from threading import Thread
 
 
 class Timer(Thread):
-    def __init__(self, function, game, nightmare_mode, game_window):
+    def __init__(self, method, start_value, nightmare_mode):
         Thread.__init__(self)
         self.daemon = True
+        self._stop = False
+        self._value = start_value
         self._nightmare_mode = nightmare_mode
-        self._timer = game.timer - 1
-        self._update_function = function
-        self._game = game
-        self._game_window = game_window
+        self._delegate_timer_update_in_view = method
 
     def run(self):
-        if self._nightmare_mode:
-            self._nightmare_run(self._game_window)
-        else:
-            self._normal_run()
-
-    def _normal_run(self):
-        i = 0
-        while not self._game.is_game_over:
+        while self._value >= 0 and not self._stop:
+            self._delegate_timer_update_in_view(self._value)
+            if self._nightmare_mode:
+                self._value -= 1
+            else:
+                self._value += 1
             time.sleep(1)
-            i += 1
-            self._update_function(i)
 
-    def _nightmare_run(self, game_window):
-        while self._timer >= 0 and not self._game.is_game_over:
-            time.sleep(1)
-            self._update_function(self._timer)
-            self._timer -= 1
-        self._game.game_over(game_window)
+    def stop_timer(self):
+        self._stop = True
+        self._Thread__stop()

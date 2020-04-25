@@ -18,14 +18,10 @@ class GameWindow(Form):
         self._cell_side = 30
         self._cell_size = Size(self._cell_side, self._cell_side)
         self._cells = []
-        # self._game = game
         self._rows = rows
         self._columns = columns
         self.FormBorderStyle = FormBorderStyle.Fixed3D
-        # timer = Timer(self.timer_update, self._game, None)
-        # timer = Timer(self.timer_update, self._game, self._game.nightmare_mode, self)
-        # timer.start()
-        self._initialize_components(rows, columns)
+        self._initialize_components()
         self.CenterToScreen()
 
     def _initialize_components(self):
@@ -47,16 +43,17 @@ class GameWindow(Form):
 
         self._flags_counter = Label()
         self._flags_counter.Parent = self
-        self._flags_counter.Text = str(self._game.flags_count)
         self._flags_counter.Location = Point(45, 30)
         self._flags_counter.Size = Size(30, 20)
 
         self._label_timer = Label()
         self._label_timer.Parent = self
-        self._label_timer.Text = str(self._game.timer)
         self._label_timer.TextAlign = ContentAlignment.MiddleRight
         self._label_timer.Location = Point(self.Size.Width - 60, 30)
         self._label_timer.Size = Size(40, 20)
+
+    def flags_update(self, value):
+        self._flags_counter.Text = value
 
     def timer_update(self, value):
         self._label_timer.Text = str(value)
@@ -72,15 +69,15 @@ class GameWindow(Form):
         file_item.DropDownItems.Add(new_game)
 
         easy = ToolStripMenuItem("&Easy")
-        easy.Click += self._game.new_easy_game
+        # easy.Click += self._game.new_easy_game
         new_game.DropDownItems.Add(easy)
 
         normal = ToolStripMenuItem("&Normal")
-        normal.Click += self._game.new_normal_game
+        # normal.Click += self._game.new_normal_game
         new_game.DropDownItems.Add(normal)
 
         hard = ToolStripMenuItem("&Hard")
-        hard.Click += self._game.new_hard_game
+        # hard.Click += self._game.new_hard_game
         new_game.DropDownItems.Add(hard)
 
         self.checkBox = CheckBox()
@@ -90,7 +87,7 @@ class GameWindow(Form):
         new_game.DropDownItems.Add(nightmare)
 
         _exit = ToolStripMenuItem("&Exit")
-        _exit.Click += self._game.close
+        # _exit.Click += self._game.close
         file_item.DropDownItems.Add(_exit)
 
         return menu_strip
