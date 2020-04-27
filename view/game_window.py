@@ -52,7 +52,7 @@ class GameWindow(Form):
         self._label_timer.Location = Point(self.Size.Width - 60, 30)
         self._label_timer.Size = Size(40, 20)
 
-    def flags_update(self, value):
+    def event_handler_flags_update(self, value):
         self._flags_counter.Text = value
 
     def timer_update(self, value):
@@ -68,17 +68,14 @@ class GameWindow(Form):
         new_game = ToolStripMenuItem("&New game")
         file_item.DropDownItems.Add(new_game)
 
-        easy = ToolStripMenuItem("&Easy")
-        # easy.Click += self._game.new_easy_game
-        new_game.DropDownItems.Add(easy)
+        self._easy = ToolStripMenuItem("&Easy")
+        new_game.DropDownItems.Add(self._easy)
 
-        normal = ToolStripMenuItem("&Normal")
-        # normal.Click += self._game.new_normal_game
-        new_game.DropDownItems.Add(normal)
+        self._normal = ToolStripMenuItem("&Normal")
+        new_game.DropDownItems.Add(self._normal)
 
-        hard = ToolStripMenuItem("&Hard")
-        # hard.Click += self._game.new_hard_game
-        new_game.DropDownItems.Add(hard)
+        self._hard = ToolStripMenuItem("&Hard")
+        new_game.DropDownItems.Add(self._hard)
 
         self.checkBox = CheckBox()
         self.checkBox.Text = "Nightmare"
@@ -86,15 +83,27 @@ class GameWindow(Form):
         nightmare = ToolStripControlHost(self.checkBox)
         new_game.DropDownItems.Add(nightmare)
 
-        _exit = ToolStripMenuItem("&Exit")
-        # _exit.Click += self._game.close
-        file_item.DropDownItems.Add(_exit)
+        self._exit = ToolStripMenuItem("&Exit")
+        self._exit.Click += self.event_handler_exit_game
+        file_item.DropDownItems.Add(self._exit)
 
         return menu_strip
 
+    def event_handler_new_easy_game(self, method):
+        self._easy.Click += method
+
+    def event_handler_new_normal_game(self, method):
+        self._normal.Click += method
+
+    def event_handler_new_hard_game(self, method):
+        self._hard.Click += method
+
+    def event_handler_exit_game(self, sender, args):
+        self.Close()
+
     def _generate_window_size(self):
-        width = self._indent_left + self._columns * self._cell_side + self._indent_right + 10
-        height = self._indent_top + self._rows * self._cell_side + self._indent_bottom + 33
+        width = self._indent_left + self._columns * self._cell_side + self._indent_right + 16 # 10
+        height = self._indent_top + self._rows * self._cell_side + self._indent_bottom + 39 # 33
         return Size(width, height)
 
     def _create_buttons(self):

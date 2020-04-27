@@ -50,14 +50,19 @@ class Game(object):
         self.flags_count = 0
 
     def start(self, complexity):
-        self._field = Field(complexity)
         if self.nightmare_mode:
             self.timer_start_value = complexity['timer']
         self.closed_cells = self._field.size - self._field.bombs
         self.flags_count = self._field.bombs
 
+        field = Field(complexity)
+
         minesweeper = GameWindow(self._field.rows, self._field.columns)
-        # minesweeper.flags_update()
+        minesweeper.event_handler_new_easy_game(self.new_easy_game)
+        minesweeper.event_handler_new_normal_game(self.new_normal_game)
+        minesweeper.event_handler_new_hard_game(self.new_hard_game)
+        # minesweeper.event_handler_exit_game(self.close)
+        # minesweeper.event_handler_flags_update(self.flags_count)
 
         timer = Timer(minesweeper.timer_update, self.timer_start_value, self.nightmare_mode)
         timer.start()
@@ -65,28 +70,24 @@ class Game(object):
         minesweeper.ShowDialog()
 
     def new_easy_game(self, sender, args):
-        form = sender.OwnerItem.OwnerItem.Owner.Parent
-        form.Hide()
-        form.Close()
-        self.is_game_over = False
-        self.nightmare_mode = form.checkBox.Checked
+        self._initialize_new_game(sender)
         self.start(Game.EASY)
 
     def new_normal_game(self, sender, args):
-        form = sender.OwnerItem.OwnerItem.Owner.Parent
-        form.Hide()
-        form.Close()
-        self.is_game_over = False
-        self.nightmare_mode = form.checkBox.Checked
+        self._initialize_new_game(sender)
         self.start(Game.NORMAL)
 
     def new_hard_game(self, sender, args):
+        self._initialize_new_game(sender)
+        self.start(Game.HARD)
+
+    def _initialize_new_game(self, sender):
         form = sender.OwnerItem.OwnerItem.Owner.Parent
         form.Hide()
         form.Close()
         self.is_game_over = False
+        self.timer_start_value = 0
         self.nightmare_mode = form.checkBox.Checked
-        self.start(Game.HARD)
 
     def game_over(self, game_window):
         self.is_game_over = True
@@ -118,4 +119,4 @@ class Game(object):
             return False
 
     def close(self, sender, args):
-        os._exit(0)
+        pass
