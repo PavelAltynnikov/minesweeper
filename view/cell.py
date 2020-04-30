@@ -34,7 +34,7 @@ class Cell(Button):
     def set_value(self, value):
         self.Text = value
 
-    def _change_view(self, value, is_bomb=False):
+    def _change_view(self, value, is_bomb):
         if is_bomb:
             self.BackColor = Color.FromArgb(250, 0, 0)
         else:

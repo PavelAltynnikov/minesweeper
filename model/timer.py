@@ -8,10 +8,16 @@ class Timer(Thread):
         Thread.__init__(self)
         self.daemon = True
         self._stop = False
-        self._value = start_value
         self._nightmare_mode = nightmare_mode
+        self._value = self._define_start_value(start_value)
         self._delegate_timer_update_in_view = method
         self.event_handler_end_game = None
+
+    def _define_start_value(self, value):
+        if self._nightmare_mode:
+            return value
+        else:
+            return 0
 
     def run(self):
         while self._value >= 0 and not self._stop:
@@ -26,3 +32,6 @@ class Timer(Thread):
     def stop_timer(self):
         self._stop = True
         self._Thread__stop()
+
+    def get_value(self):
+        return self._value

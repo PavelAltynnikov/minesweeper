@@ -60,9 +60,6 @@ class GameWindow(Form):
                 cell.MouseDown += method
                 # cell.MouseDown += self.test
 
-    def test(self, sender, args):
-        print(1)
-
     def event_handler_flags_update(self, value):
         self._flags_counter.Text = value
 

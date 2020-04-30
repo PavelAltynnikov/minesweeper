@@ -73,6 +73,12 @@ class Field(object):
         else:
             return value
 
+    def is_bomb(self, y, x):
+        if self._bombs[y][x]:
+            return True
+        else:
+            return False
+
     @staticmethod
     def test_print(lst):
         for row in lst:
