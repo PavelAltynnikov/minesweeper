@@ -5,16 +5,13 @@ MEDIUM  16х16 = 256 -> 40 бомб -> 15.6%
 HARD    30х16 = 480 -> 99 бомб -> 20.6%
 NIGHTMARE - таймер идёт на убыль
 '''
-import os
 from model.field import Field
 from view.game_window import GameWindow
 from model.timer import Timer
 
 import clr
 clr.AddReference('System.Windows.Forms')
-from System.Windows.Forms import MouseButtons, FlatStyle, MouseEventArgs
-clr.AddReference('System.Drawing')
-from System.Drawing import ContentAlignment, Size, Point, Color
+from System.Windows.Forms import MouseButtons
 
 
 class Game(object):
