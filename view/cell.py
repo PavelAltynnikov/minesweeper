@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import clr
 clr.AddReference('System.Windows.Forms')
-from System.Windows.Forms import Button, FlatStyle
+from System.Windows.Forms import Button, FlatStyle, MouseButtons, MouseEventArgs
 clr.AddReference('System.Drawing')
 from System.Drawing import Color
 
@@ -45,6 +45,9 @@ class Cell(Button):
         self.FlatAppearance.BorderSize = 1
         self.FlatAppearance.BorderColor = Color.FromArgb(128, 128, 128)
         self.FlatStyle = FlatStyle.Flat
+
+    def programmable_mouse_down(self):
+        self.OnMouseDown(MouseEventArgs(MouseButtons.Left, 1, 0, 0, 0))
 
     def __str__(self):
         return 'y: {}, x: {}'.format(self._y, self._x)

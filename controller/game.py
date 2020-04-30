@@ -57,9 +57,9 @@ class Game(object):
 
     def start(self, complexity):
         self._model = Field(complexity)
+        self._game_initialize()
         self._view_initialize(complexity)
         self._timer_initialize(complexity)
-        self._game_initialize()
         self._view.ShowDialog()
 
     def _timer_initialize(self, complexity):
@@ -139,10 +139,10 @@ class Game(object):
         self._is_game_over = True
         if not self._closed_cells:
             self._delegate_final_alert('You Win!')
-            # self._disabled_cells(game_window)
+            self._disabled_cells()
         else:
             self._delegate_final_alert('You Lose')
-            # self._show_and_activated_all_bombs(game_window)
+            self._show_and_activated_all_bombs()
         # надо пересмотреть это решение так как это вызывается в самом таймере
         self._timer.stop_timer()
 
@@ -155,21 +155,21 @@ class Game(object):
                     if 0 <= x < self._model._columns:
                         neighbro_cell = self._view._cells[y][x]
                         if not neighbro_cell.is_checked:
-                            neighbro_cell.OnMouseDown(MouseEventArgs(MouseButtons.Left, 1, 0, 0, 0))
+                            neighbro_cell.programmable_mouse_down()
 
-    # def _show_and_activated_all_bombs(self, game_window):
-    #     for row in game_window._cells:
-    #         for cell in row:
-    #             if self.is_bomb(cell.y, cell.x):
-    #                 if not cell.is_checked:
-    #                     game_window._change_view(cell, is_bomb=True)
-    #             cell.Enabled = False
+    def _show_and_activated_all_bombs(self):
+        for row in self._view._cells:
+            for cell in row:
+                if self._model.is_bomb(cell.y, cell.x):
+                    if not cell.is_checked:
+                        cell._change_view(self._model.get_hint_value(cell.y, cell.x), True)
+                cell.Enabled = False
 
-    # def _disabled_cells(self, game_window):
-    #     for row in game_window._cells:
-    #         for cell in row:
-    #             if cell.Enabled:
-    #                 cell.Enabled = False
+    def _disabled_cells(self):
+        for row in self._view._cells:
+            for cell in row:
+                if cell.Enabled:
+                    cell.Enabled = False
 
     def close(self, sender, args):
         pass
