@@ -45,3 +45,6 @@ class Cell(Button):
         self.FlatAppearance.BorderSize = 1
         self.FlatAppearance.BorderColor = Color.FromArgb(128, 128, 128)
         self.FlatStyle = FlatStyle.Flat
+
+    def __str__(self):
+        return 'y: {}, x: {}'.format(self._y, self._x)

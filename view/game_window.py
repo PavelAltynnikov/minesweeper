@@ -16,7 +16,7 @@ class GameWindow(Form):
         self._indent_bottom = 10
         self._cell_side = 30
         self._cell_size = Size(self._cell_side, self._cell_side)
-        self._cells = []
+        self._cells = []  # возможно стоит сделать публичным свойством
         self._rows = rows
         self._columns = columns
         self.FormBorderStyle = FormBorderStyle.Fixed3D
@@ -58,7 +58,6 @@ class GameWindow(Form):
         for row in self._cells:
             for cell in row:
                 cell.MouseDown += method
-                # cell.MouseDown += self.test
 
     def event_handler_flags_update(self, value):
         self._flags_counter.Text = value

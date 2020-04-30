@@ -12,7 +12,7 @@ from model.timer import Timer
 
 import clr
 clr.AddReference('System.Windows.Forms')
-from System.Windows.Forms import MouseButtons, FlatStyle
+from System.Windows.Forms import MouseButtons, FlatStyle, MouseEventArgs
 clr.AddReference('System.Drawing')
 from System.Drawing import ContentAlignment, Size, Point, Color
 
@@ -104,8 +104,8 @@ class Game(object):
             self.game_over()
         else:
             cell._change_view(value, False)
-        # if value == '':
-        #     self._check_neighboring_cells(cell)
+        if value == '':
+            self._check_neighboring_cells(cell)
         if not self._closed_cells:
             self.game_over()
 
@@ -145,6 +145,17 @@ class Game(object):
             # self._show_and_activated_all_bombs(game_window)
         # надо пересмотреть это решение так как это вызывается в самом таймере
         self._timer.stop_timer()
+
+    def _check_neighboring_cells(self, cell):
+        for dy in (-1, 0, 1):
+            y = cell.y + dy
+            if 0 <= y < self._model._rows:
+                for dx in (-1, 0, 1):
+                    x = cell.x + dx
+                    if 0 <= x < self._model._columns:
+                        neighbro_cell = self._view._cells[y][x]
+                        if not neighbro_cell.is_checked:
+                            neighbro_cell.OnMouseDown(MouseEventArgs(MouseButtons.Left, 1, 0, 0, 0))
 
     # def _show_and_activated_all_bombs(self, game_window):
     #     for row in game_window._cells:
