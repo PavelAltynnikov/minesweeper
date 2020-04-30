@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import clr
 clr.AddReference('System.Windows.Forms')
-from System.Windows.Forms import Button
+from System.Windows.Forms import Button, FlatStyle
+clr.AddReference('System.Drawing')
+from System.Drawing import Color
 
 
 class Cell(Button):
@@ -28,3 +30,18 @@ class Cell(Button):
 
     def OnGotFocus(self, *args):
         self.NotifyDefault(False)
+
+    def set_value(self, value):
+        self.Text = value
+
+    def _change_view(self, value, is_bomb=False):
+        if is_bomb:
+            self.BackColor = Color.FromArgb(250, 0, 0)
+        else:
+            self.BackColor = Color.FromArgb(192, 192, 192)
+        self.Enabled = False
+        self.is_checked = True
+        self.Text = value
+        self.FlatAppearance.BorderSize = 1
+        self.FlatAppearance.BorderColor = Color.FromArgb(128, 128, 128)
+        self.FlatStyle = FlatStyle.Flat

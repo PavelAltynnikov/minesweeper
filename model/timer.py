@@ -11,6 +11,7 @@ class Timer(Thread):
         self._value = start_value
         self._nightmare_mode = nightmare_mode
         self._delegate_timer_update_in_view = method
+        self.event_handler_end_game = None
 
     def run(self):
         while self._value >= 0 and not self._stop:
@@ -20,6 +21,7 @@ class Timer(Thread):
             else:
                 self._value += 1
             time.sleep(1)
+        self.event_hendler_end_game()
 
     def stop_timer(self):
         self._stop = True

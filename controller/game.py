@@ -10,6 +10,12 @@ from model.field import Field
 from view.game_window import GameWindow
 from model.timer import Timer
 
+import clr
+clr.AddReference('System.Windows.Forms')
+from System.Windows.Forms import MouseButtons, FlatStyle
+clr.AddReference('System.Drawing')
+from System.Drawing import ContentAlignment, Size, Point, Color
+
 
 class Game(object):
     TEST = {
@@ -41,70 +47,124 @@ class Game(object):
     }
 
     def __init__(self):
-        self._field = None
+        self._model = None
+        self._view = None
         self.is_game_over = False
-        self.nightmare_mode = True
-        # self.nightmare_mode = False
-        self.timer_start_value = 0
-        self.closed_cells = 0
-        self.flags_count = 0
+        self._nightmare_mode = True
+        # self._nightmare_mode = False
+        self._timer_start_value = 0
+        self._closed_cells = 0
+        self._flags_count = 0
 
     def start(self, complexity):
-        if self.nightmare_mode:
-            self.timer_start_value = complexity['timer']
-        self.closed_cells = self._field.size - self._field.bombs
-        self.flags_count = self._field.bombs
+        self._model = Field(complexity)
 
-        field = Field(complexity)
+        if self._nightmare_mode:
+            self._timer_start_value = complexity['timer']
+        self._closed_cells = self._model.size - self._model.bombs
+        self._flags_count = self._model.bombs
 
-        minesweeper = GameWindow(self._field.rows, self._field.columns)
-        minesweeper.event_handler_new_easy_game(self.new_easy_game)
-        minesweeper.event_handler_new_normal_game(self.new_normal_game)
-        minesweeper.event_handler_new_hard_game(self.new_hard_game)
-        # minesweeper.event_handler_exit_game(self.close)
-        # minesweeper.event_handler_flags_update(self.flags_count)
+        self._view = GameWindow(self._model.rows, self._model.columns)
+        self._view.event_handler_new_easy_game(self.new_easy_game)
+        self._view.event_handler_new_normal_game(self.new_normal_game)
+        self._view.event_handler_new_hard_game(self.new_hard_game)
+        self._view.event_handler_buttons_click(self.mouse_button_down)
+        self._view.set_flags_counter(self._flags_count)
+        # self._view.event_handler_exit_game(self.close)
+        # self._view.event_handler_flags_update(self._flags_count)
+        self._delegate_final_alert = self._view.final_alert
 
-        timer = Timer(minesweeper.timer_update, self.timer_start_value, self.nightmare_mode)
+        timer = Timer(self._view.timer_update, self._timer_start_value, self._nightmare_mode)
+        timer.event_hendler_end_game = self.game_over
         timer.start()
 
-        minesweeper.ShowDialog()
+        self._view.ShowDialog()
+
+    def mouse_button_down(self, cell, args):
+        if not cell.is_checked:
+            if args.Button == MouseButtons.Right:
+                self.right_click(cell)
+            elif args.Button == MouseButtons.Left:
+                pass
+                # self.left_click(cell)
+
+    def right_click(self, cell):
+        if cell.Text != 'F':
+            if self._flags_count:
+                cell.set_value('F')
+                self._flags_count -= 1
+        else:
+            cell.set_value('')
+            self._flags_count += 1
+        self._view.set_flags_counter(self._flags_count)
+
+    def left_click(self, cell):
+        self._closed_cells -= 1
+        value = self._model.get_hint_value(cell.y, cell.x)
+        if self.is_bomb(cell.y, cell.x):
+            self.game_over(self)
+        else:
+            cell.change_view(cell)
+        if value == '':
+            self._check_neighboring_cells(cell)
+        if not self._closed_cells:
+            self.game_over()
+
+    # def _change_view(self, cell, is_bomb=False):
+    #     if is_bomb:
+    #         cell.BackColor = Color.FromArgb(250, 0, 0)
+    #     else:
+    #         cell.BackColor = Color.FromArgb(192, 192, 192)
+    #     cell.Enabled = False
+    #     cell.is_checked = True
+    #     cell.Text = self._model.get_hint_value(cell.y, cell.x)
+    #     cell.FlatAppearance.BorderSize = 1
+    #     cell.FlatAppearance.BorderColor = Color.FromArgb(128, 128, 128)
+    #     cell.FlatStyle = FlatStyle.Flat
 
     def new_easy_game(self, sender, args):
-        self._initialize_new_game(sender)
+        form = sender.OwnerItem.OwnerItem.Owner.Parent
+        self._hide_previus_game(form)
+        self._game_reset(sender)
         self.start(Game.EASY)
 
     def new_normal_game(self, sender, args):
-        self._initialize_new_game(sender)
+        form = sender.OwnerItem.OwnerItem.Owner.Parent
+        self._hide_previus_game(form)
+        self._game_reset(sender)
         self.start(Game.NORMAL)
 
     def new_hard_game(self, sender, args):
-        self._initialize_new_game(sender)
+        form = sender.OwnerItem.OwnerItem.Owner.Parent
+        self._hide_previus_game(form)
+        self._game_reset(form)
         self.start(Game.HARD)
 
-    def _initialize_new_game(self, sender):
-        form = sender.OwnerItem.OwnerItem.Owner.Parent
-        form.Hide()
-        form.Close()
+    def _hide_previus_game(self, game_window):
+        game_window.Hide()
+        game_window.Close()
+
+    def _game_reset(self, game_window):
         self.is_game_over = False
-        self.timer_start_value = 0
-        self.nightmare_mode = form.checkBox.Checked
+        self._timer_start_value = 0
+        self._nightmare_mode = game_window.checkBox.Checked
 
-    def game_over(self, game_window):
+    def game_over(self):
         self.is_game_over = True
-        if not self.closed_cells:
-            game_window.final_alert('You Win!')
-            self.enabled_cells(game_window)
+        if not self._closed_cells:
+            self._delegate_final_alert('You Win!')
+            # self.enabled_cells(game_window)
         else:
-            game_window.final_alert('You Lose')
-            self.show_and_activated_all_bombs(game_window)
+            self._delegate_final_alert('You Lose')
+            # self.show_and_activated_all_bombs(game_window)
 
-    def show_and_activated_all_bombs(self, game_window):
-        for row in game_window._cells:
-            for cell in row:
-                if self.is_bomb(cell.y, cell.x):
-                    if not cell.is_checked:
-                        game_window._change_view(cell, is_bomb=True)
-                cell.Enabled = False
+    # def show_and_activated_all_bombs(self, game_window):
+    #     for row in game_window._cells:
+    #         for cell in row:
+    #             if self.is_bomb(cell.y, cell.x):
+    #                 if not cell.is_checked:
+    #                     game_window._change_view(cell, is_bomb=True)
+    #             cell.Enabled = False
 
     def enabled_cells(self, game_window):
         for row in game_window._cells:
@@ -113,7 +173,7 @@ class Game(object):
                     cell.Enabled = False
 
     def is_bomb(self, y, x):
-        if self._field._bombs[y][x]:
+        if self._model._bombs[y][x]:
             return True
         else:
             return False

@@ -6,7 +6,6 @@ from System.Windows.Forms import (CheckBox, Form, FormBorderStyle, FlatStyle, La
 clr.AddReference('System.Drawing')
 from System.Drawing import ContentAlignment, Size, Point, Color
 from view.cell import Cell
-from model.timer import Timer
 
 
 class GameWindow(Form):
@@ -51,6 +50,18 @@ class GameWindow(Form):
         self._label_timer.TextAlign = ContentAlignment.MiddleRight
         self._label_timer.Location = Point(self.Size.Width - 60, 30)
         self._label_timer.Size = Size(40, 20)
+
+    def set_flags_counter(self, value):
+        self._flags_counter.Text = str(value)
+
+    def event_handler_buttons_click(self, method):
+        for row in self._cells:
+            for cell in row:
+                cell.MouseDown += method
+                # cell.MouseDown += self.test
+
+    def test(self, sender, args):
+        print(1)
 
     def event_handler_flags_update(self, value):
         self._flags_counter.Text = value
@@ -102,8 +113,8 @@ class GameWindow(Form):
         self.Close()
 
     def _generate_window_size(self):
-        width = self._indent_left + self._columns * self._cell_side + self._indent_right + 16 # 10
-        height = self._indent_top + self._rows * self._cell_side + self._indent_bottom + 39 # 33
+        width = self._indent_left + self._columns * self._cell_side + self._indent_right + 16  # 10
+        height = self._indent_top + self._rows * self._cell_side + self._indent_bottom + 39  # 33
         return Size(width, height)
 
     def _create_buttons(self):
@@ -120,14 +131,15 @@ class GameWindow(Form):
             self._cells.append(row)
 
     # rename to change cell_status_and_view
-    def _change_view(self, cell, is_bomb=False):
+    @staticmethod
+    def _change_view(cell, is_bomb=False):
         if is_bomb:
             cell.BackColor = Color.FromArgb(250, 0, 0)
         else:
             cell.BackColor = Color.FromArgb(192, 192, 192)
         cell.Enabled = False
         cell.is_checked = True
-        cell.Text = self._game._field.get_hint_value(cell.y, cell.x)
+        # cell.Text = self._game._field.get_hint_value(cell.y, cell.x)
         cell.FlatAppearance.BorderSize = 1
         cell.FlatAppearance.BorderColor = Color.FromArgb(128, 128, 128)
         cell.FlatStyle = FlatStyle.Flat
