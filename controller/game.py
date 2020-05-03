@@ -6,8 +6,8 @@ HARD    30х16 = 480 -> 99 бомб -> 20.6%
 NIGHTMARE - таймер идёт на убыль
 '''
 from model.field import Field
-from view.game_window import GameWindow
 from model.timer import Timer
+from view.game_window import GameWindow
 
 import clr
 clr.AddReference('System.Windows.Forms')
@@ -44,38 +44,38 @@ class Game(object):
     }
 
     def __init__(self):
-        self._model = None
-        self._timer = None
-        self._view = None
-        self._is_game_over = False
-        self._nightmare_mode = False
-        self._closed_cells = 0
-        self._flags_count = 0
+        self.model = None
+        self.timer = None
+        self.view = None
+        self.is_game_over = False
+        self.nightmare_mode = False
+        self.closed_cells = 0
+        self.flags_count = 0
 
     def start(self, complexity):
-        self._model = Field(complexity)
-        self._game_initialize()
-        self._view_initialize(complexity)
-        self._timer_initialize(complexity)
-        self._view.ShowDialog()
+        self.model = Field(complexity)
+        self.game_initialize()
+        self.view_initialize(complexity)
+        self.timer_initialize(complexity)
+        self.view.ShowDialog()
 
-    def _timer_initialize(self, complexity):
-        self._timer = Timer(self._view.timer_update, complexity['timer'], self._nightmare_mode)
-        self._timer.event_hendler_end_game = self.game_over
-        self._timer.start()
+    def game_initialize(self):
+        self.closed_cells = self.model.size - self.model.bombs
+        self.flags_count = self.model.bombs
 
-    def _view_initialize(self, complexity):
-        self._view = GameWindow(complexity['rows'], complexity['columns'])
-        self._view.event_handler_new_easy_game(self.new_easy_game)
-        self._view.event_handler_new_normal_game(self.new_normal_game)
-        self._view.event_handler_new_hard_game(self.new_hard_game)
-        self._view.event_handler_buttons_click(self.mouse_button_down)
-        self._view.set_flags_counter(self._flags_count)
-        self._delegate_final_alert = self._view.final_alert
+    def view_initialize(self, complexity):
+        self.view = GameWindow(complexity['rows'], complexity['columns'])
+        self.view.event_handler_new_easy_game(self.new_easy_game)
+        self.view.event_handler_new_normal_game(self.new_normal_game)
+        self.view.event_handler_new_hard_game(self.new_hard_game)
+        self.view.event_handler_buttons_click(self.mouse_button_down)
+        self.view.set_flags_counter(self.flags_count)
+        self.delegate_final_message = self.view.final_message
 
-    def _game_initialize(self):
-        self._closed_cells = self._model.size - self._model.bombs
-        self._flags_count = self._model.bombs
+    def timer_initialize(self, complexity):
+        self.timer = Timer(self.view.timer_update, complexity['timer'], self.nightmare_mode)
+        self.timer.event_hendler_end_game = self.game_over
+        self.timer.start()
 
     def mouse_button_down(self, cell, args):
         if not cell.is_checked:
@@ -86,84 +86,84 @@ class Game(object):
 
     def right_click(self, cell):
         if cell.Text != 'F':
-            if self._flags_count:
+            if self.flags_count:
                 cell.set_value('F')
-                self._flags_count -= 1
+                self.flags_count -= 1
         else:
             cell.set_value('')
-            self._flags_count += 1
-        self._view.set_flags_counter(self._flags_count)
+            self.flags_count += 1
+        self.view.set_flags_counter(self.flags_count)
 
     def left_click(self, cell):
-        self._closed_cells -= 1
-        value = self._model.get_hint_value(cell.y, cell.x)
-        if self._model.is_bomb(cell.y, cell.x):
+        self.closed_cells -= 1
+        value = self.model[cell.y][cell.x]
+        if self.model.is_bomb(cell.y, cell.x):
             self.game_over()
         else:
-            cell._change_view(value, False)
-        if value == '':
-            self._check_neighboring_cells(cell)
-        if not self._closed_cells:
+            cell.change_view(value, False)
+        if value == '0':
+            self.check_neighboring_cells(cell)
+        if not self.closed_cells:
             self.game_over()
 
     def new_easy_game(self, sender, args):
         form = sender.OwnerItem.OwnerItem.Owner.Parent
-        self._hide_previus_game(form)
-        self._game_reset(form)
+        self.hide_previus_game(form)
+        self.game_reset(form)
         self.start(Game.EASY)
 
     def new_normal_game(self, sender, args):
         form = sender.OwnerItem.OwnerItem.Owner.Parent
-        self._hide_previus_game(form)
-        self._game_reset(form)
+        self.hide_previus_game(form)
+        self.game_reset(form)
         self.start(Game.NORMAL)
 
     def new_hard_game(self, sender, args):
         form = sender.OwnerItem.OwnerItem.Owner.Parent
-        self._hide_previus_game(form)
-        self._game_reset(form)
+        self.hide_previus_game(form)
+        self.game_reset(form)
         self.start(Game.HARD)
 
-    def _hide_previus_game(self, game_window):
+    def hide_previus_game(self, game_window):
         game_window.Hide()
         game_window.Close()
 
-    def _game_reset(self, game_window):
-        self._is_game_over = False
-        self._nightmare_mode = game_window.checkBox.Checked
+    def game_reset(self, game_window):
+        self.is_game_over = False
+        self.nightmare_mode = game_window.checkBox.Checked
 
     def game_over(self):
-        self._is_game_over = True
-        if not self._closed_cells:
-            self._delegate_final_alert('You Win!')
-            self._disabled_cells()
+        self.is_game_over = True
+        if not self.closed_cells:
+            self.delegate_final_message('You Win!')
+            self.disabled_cells()
         else:
-            self._delegate_final_alert('You Lose')
-            self._show_and_activated_all_bombs()
+            self.delegate_final_message('You Lose')
+            self.show_and_activated_all_bombs()
         # надо пересмотреть это решение так как это вызывается в самом таймере
-        self._timer.stop_timer()
+        self.timer.stop_timer()
 
-    def _check_neighboring_cells(self, cell):
+    def check_neighboring_cells(self, cell):
         for dy in (-1, 0, 1):
             y = cell.y + dy
-            if 0 <= y < self._model._rows:
+            if 0 <= y < self.model.rows:
                 for dx in (-1, 0, 1):
                     x = cell.x + dx
-                    if 0 <= x < self._model._columns:
-                        neighbro_cell = self._view._cells[y][x]
+                    if 0 <= x < self.model.columns:
+                        neighbro_cell = self.view[y][x]
                         if not neighbro_cell.is_checked:
                             neighbro_cell.programmable_mouse_down()
 
-    def _show_and_activated_all_bombs(self):
-        for row in self._view._cells:
+    def show_and_activated_all_bombs(self):
+        for row in self.view:
             for cell in row:
-                if self._model.is_bomb(cell.y, cell.x):
+                if self.model.is_bomb(cell.y, cell.x):
                     if not cell.is_checked:
-                        cell._change_view(self._model.get_hint_value(cell.y, cell.x), True)
+                        cell.change_view(self.model[cell.y][cell.x], True)
                 cell.Enabled = False
 
-    def _disabled_cells(self):
-        for row in self._view._cells:
+    def disabled_cells(self):
+        for row in self.view:
             for cell in row:
                 if cell.Enabled:
                     cell.Enabled = False

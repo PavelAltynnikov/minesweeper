@@ -6,7 +6,6 @@ class Field(object):
     def __init__(self, complexity):
         self._rows = complexity['rows']
         self._columns = complexity['columns']
-        self._size = self._rows * self._columns
         self._count_bombs = complexity['bombs']
         self._found_bombs = 0
         self._bombs = self._generate_bombs()
@@ -56,22 +55,18 @@ class Field(object):
 
     @property
     def size(self):
-        return self._size
+        return self._rows * self._columns
 
     @property
     def bombs(self):
         return self._count_bombs
 
-    @bombs.setter
-    def bombs(self, value):
-        self._count_bombs = value
-
-    def get_hint_value(self, y, x):
-        value = self._hints[y][x]
-        if value == '0':
-            return ''
-        else:
-            return value
+    # def get_hint_value(self, y, x):
+    #     value = self._hints[y][x]
+    #     if value == '0':
+    #         return ''
+    #     else:
+    #         return value
 
     def is_bomb(self, y, x):
         if self._bombs[y][x]:
@@ -79,16 +74,30 @@ class Field(object):
         else:
             return False
 
-    @staticmethod
-    def test_print(lst):
-        for row in lst:
+    def __getitem__(self, index):
+        return self._hints[index]
+
+
+if __name__ == '__main__':
+    def test_print(data):
+        for row in data:
             for cell in row:
                 print cell,
             print
         print
 
 
-if __name__ == '__main__':
-    f = Field(Field.TEST)
-    Field.test_print(f._bombs)
-    Field.test_print(f._hints)
+    test_complexity = {
+        'rows': 3,
+        'columns': 4,
+        'bombs': 1,
+        'timer': 5
+    }
+
+    f = Field(test_complexity)
+    test_print(f._bombs)
+    test_print(f)
+
+    print f[0][0]
+    print f[1][1]
+    print f[2][2]

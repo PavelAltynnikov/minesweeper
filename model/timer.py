@@ -32,6 +32,3 @@ class Timer(Thread):
     def stop_timer(self):
         self._stop = True
         self._Thread__stop()
-
-    def get_value(self):
-        return self._value

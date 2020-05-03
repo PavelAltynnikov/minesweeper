@@ -24,24 +24,23 @@ class Cell(Button):
     def is_checked(self):
         return self._checked
 
-    @is_checked.setter
-    def is_checked(self, value):
-        self._checked = value
-
     def OnGotFocus(self, *args):
         self.NotifyDefault(False)
 
     def set_value(self, value):
         self.Text = value
 
-    def _change_view(self, value, is_bomb):
+    def change_view(self, value, is_bomb):
+        if value != '0':
+            self.Text = value
+        else:
+            self.Text = ''
         if is_bomb:
             self.BackColor = Color.FromArgb(250, 0, 0)
         else:
             self.BackColor = Color.FromArgb(192, 192, 192)
         self.Enabled = False
-        self.is_checked = True
-        self.Text = value
+        self._checked = True
         self.FlatAppearance.BorderSize = 1
         self.FlatAppearance.BorderColor = Color.FromArgb(128, 128, 128)
         self.FlatStyle = FlatStyle.Flat
