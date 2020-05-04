@@ -61,13 +61,6 @@ class Field(object):
     def bombs(self):
         return self._count_bombs
 
-    # def get_hint_value(self, y, x):
-    #     value = self._hints[y][x]
-    #     if value == '0':
-    #         return ''
-    #     else:
-    #         return value
-
     def is_bomb(self, y, x):
         if self._bombs[y][x]:
             return True
