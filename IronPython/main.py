@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from controller.game import Game
+from presenter.game import Game
 
 game = Game()
 game.start(Game.EASY)

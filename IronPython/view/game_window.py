@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 import clr
+from System import EventArgs
 clr.AddReference('System.Windows.Forms')
-from System.Windows.Forms import (CheckBox, Form, FormBorderStyle, FlatStyle, Label, MenuStrip, ToolStripControlHost,
-                                  MouseButtons, ToolStripMenuItem, TextRenderer)
+from System.Windows.Forms import (
+    CheckBox, Form, FormBorderStyle, FlatStyle, Label, MenuStrip,
+    ToolStripControlHost, MouseButtons, ToolStripMenuItem, TextRenderer
+)
 clr.AddReference('System.Drawing')
 from System.Drawing import ContentAlignment, Size, Point, Color
 from view.cell import Cell
@@ -23,6 +26,8 @@ class GameWindow(Form):
         self._initialize_components()
         self.CenterToScreen()
 
+        self._new_game_handlers = []
+
     def _initialize_components(self):
         self.MainMenuStrip = self._generate_menu_strip()
         self.Size = self._generate_window_size()
@@ -32,7 +37,8 @@ class GameWindow(Form):
         self._flags_description.Parent = self
         self._flags_description.Text = 'Flags:'
         self._flags_description.Location = Point(10, 30)
-        self._flags_description.Size = TextRenderer.MeasureText(self._flags_description.Text, self._flags_description.DefaultFont)
+        self._flags_description.Size = TextRenderer.MeasureText(
+            self._flags_description.Text, self._flags_description.DefaultFont)
 
         self._result = Label()
         self._result.Parent = self
@@ -55,19 +61,22 @@ class GameWindow(Form):
         menu_strip = MenuStrip()
         menu_strip.Parent = self
 
-        file_item = ToolStripMenuItem("&File")
+        file_item = ToolStripMenuItem("File")
         menu_strip.Items.Add(file_item)
 
-        new_game = ToolStripMenuItem("&New game")
+        new_game = ToolStripMenuItem("New game")
         file_item.DropDownItems.Add(new_game)
 
-        self._easy = ToolStripMenuItem("&Easy")
+        self._easy = ToolStripMenuItem("Easy")
+        self._easy.Click += self._on_new_game_click
         new_game.DropDownItems.Add(self._easy)
 
-        self._normal = ToolStripMenuItem("&Normal")
+        self._normal = ToolStripMenuItem("Normal")
+        self._normal.Click += self._on_new_game_click
         new_game.DropDownItems.Add(self._normal)
 
-        self._hard = ToolStripMenuItem("&Hard")
+        self._hard = ToolStripMenuItem("Hard")
+        self._hard.Click += self._on_new_game_click
         new_game.DropDownItems.Add(self._hard)
 
         self.checkBox = CheckBox()
@@ -78,7 +87,7 @@ class GameWindow(Form):
         nightmare.Size = Size(100, 20)
         new_game.DropDownItems.Add(nightmare)
 
-        self._exit = ToolStripMenuItem("&Exit")
+        self._exit = ToolStripMenuItem("Exit")
         self._exit.Click += self._exit_game
         file_item.DropDownItems.Add(self._exit)
 
@@ -101,30 +110,28 @@ class GameWindow(Form):
                 row.append(cell)
             self._cells.append(row)
 
+    def set_cell_click_handler(self, handler):
+        for row in self._cells:
+            for cell in row:
+                cell.MouseDown += handler
+
     def set_flags_counter(self, value):
         self._flags_counter.Text = str(value)
 
-    def timer_update(self, value):
-        self._label_timer.Text = str(value)
-
-    def final_message(self, message):
+    def set_final_message(self, message):
         self._result.Text = message
         self._result.Size = TextRenderer.MeasureText(self._result.Text, self._result.DefaultFont)
         self._result.Location = Point(self.Size.Width / 2 - self._result.Size.Width / 2 - 5, 30)
 
-    def event_handler_buttons_click(self, method):
-        for row in self._cells:
-            for cell in row:
-                cell.MouseDown += method
+    def timer_update(self, value):
+        self._label_timer.Text = str(value)
 
-    def event_handler_new_easy_game(self, method):
-        self._easy.Click += method
+    def add_handler_new_game_buttons(self, handler):
+        self._new_game_handlers.append(handler)
 
-    def event_handler_new_normal_game(self, method):
-        self._normal.Click += method
-
-    def event_handler_new_hard_game(self, method):
-        self._hard.Click += method
+    def _on_new_game_click(self, sender, args):
+        for handler in self._new_game_handlers:
+            handler(self, sender)
 
     def _exit_game(self, sender, args):
         self.Close()

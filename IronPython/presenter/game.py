@@ -65,12 +65,9 @@ class Game(object):
 
     def view_initialize(self, complexity):
         self.view = GameWindow(complexity['rows'], complexity['columns'])
-        self.view.event_handler_new_easy_game(self.new_easy_game)
-        self.view.event_handler_new_normal_game(self.new_normal_game)
-        self.view.event_handler_new_hard_game(self.new_hard_game)
-        self.view.event_handler_buttons_click(self.mouse_button_down)
+        self.view.add_handler_new_game_buttons(self.new_game)
+        self.view.set_cell_click_handler(self.mouse_button_down)
         self.view.set_flags_counter(self.flags_count)
-        self.delegate_final_message = self.view.final_message
 
     def timer_initialize(self, complexity):
         self.timer = Timer(self.view.timer_update, complexity['timer'], self.nightmare_mode)
@@ -106,23 +103,15 @@ class Game(object):
         if not self.closed_cells:
             self.game_over()
 
-    def new_easy_game(self, sender, args):
-        form = sender.OwnerItem.OwnerItem.Owner.Parent
-        self.hide_previus_game(form)
-        self.game_reset(form)
-        self.start(Game.EASY)
-
-    def new_normal_game(self, sender, args):
-        form = sender.OwnerItem.OwnerItem.Owner.Parent
-        self.hide_previus_game(form)
-        self.game_reset(form)
-        self.start(Game.NORMAL)
-
-    def new_hard_game(self, sender, args):
-        form = sender.OwnerItem.OwnerItem.Owner.Parent
-        self.hide_previus_game(form)
-        self.game_reset(form)
-        self.start(Game.HARD)
+    def new_game(self, sender, args):
+        self.hide_previus_game(sender)
+        self.game_reset(sender)
+        if 'Easy' in args.Text:
+            self.start(Game.EASY)
+        elif 'Normal' in args.Text:
+            self.start(Game.NORMAL)
+        elif 'Hard' in args.Text:
+            self.start(Game.HARD)
 
     def hide_previus_game(self, game_window):
         game_window.Hide()
@@ -135,10 +124,10 @@ class Game(object):
     def game_over(self):
         self.is_game_over = True
         if not self.closed_cells:
-            self.delegate_final_message('You Win!')
+            self.view.set_final_message('You Win!')
             self.disabled_cells()
         else:
-            self.delegate_final_message('You Lose')
+            self.view.set_final_message('You Lose')
             self.show_and_activated_all_bombs()
         # надо пересмотреть это решение так как это вызывается в самом таймере
         self.timer.stop_timer()
@@ -167,6 +156,3 @@ class Game(object):
             for cell in row:
                 if cell.Enabled:
                     cell.Enabled = False
-
-    def close(self, sender, args):
-        pass

@@ -37,12 +37,14 @@ class Field(object):
         count = 0
         for dy in (-1, 0, 1):
             y = current_y + dy
-            if 0 <= y < self._rows:
-                for dx in (-1, 0, 1):
-                    x = current_x + dx
-                    if 0 <= x < self._columns:
-                        if self._bombs[y][x]:
-                            count += 1
+            if not (0 <= y < self._rows):
+                continue
+            for dx in (-1, 0, 1):
+                x = current_x + dx
+                if not (0 <= x < self._columns):
+                    continue
+                if self._bombs[y][x]:
+                    count += 1
         return str(count)
 
     @property
@@ -81,9 +83,9 @@ if __name__ == '__main__':
 
 
     test_complexity = {
-        'rows': 3,
-        'columns': 4,
-        'bombs': 1,
+        'rows': 6,
+        'columns': 7,
+        'bombs': 8,
         'timer': 5
     }
 
