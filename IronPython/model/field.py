@@ -7,7 +7,6 @@ class Field(object):
         self._rows = complexity['rows']
         self._columns = complexity['columns']
         self._count_bombs = complexity['bombs']
-        self._found_bombs = 0
         self._bombs = self._generate_bombs()
         self._hints = self._generate_hints()
         self._game_over = False
@@ -92,7 +91,3 @@ if __name__ == '__main__':
     f = Field(test_complexity)
     test_print(f._bombs)
     test_print(f)
-
-    print f[0][0]
-    print f[1][1]
-    print f[2][2]

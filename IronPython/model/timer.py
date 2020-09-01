@@ -4,14 +4,14 @@ from threading import Thread
 
 
 class Timer(Thread):
-    def __init__(self, method, start_value, nightmare_mode):
-        Thread.__init__(self)
+    def __init__(self, start_value, nightmare_mode, delegate, handler):
+        super(Timer, self).__init__()
         self.daemon = True
         self._stop = False
         self._nightmare_mode = nightmare_mode
         self._value = self._define_start_value(start_value)
-        self._delegate_timer_update_in_view = method
-        self.event_handler_end_game = None
+        self._delegate_timer_update_in_view = delegate
+        self._end_game_handler = handler
 
     def _define_start_value(self, value):
         if self._nightmare_mode:
@@ -27,7 +27,7 @@ class Timer(Thread):
             else:
                 self._value += 1
             time.sleep(1)
-        self.event_hendler_end_game()
+        self._end_game_handler()
 
     def stop_timer(self):
         self._stop = True

@@ -3,7 +3,7 @@ import clr
 from System import EventArgs
 clr.AddReference('System.Windows.Forms')
 from System.Windows.Forms import (
-    CheckBox, Form, FormBorderStyle, FlatStyle, Label, MenuStrip,
+    Button, CheckBox, Form, FormBorderStyle, FlatStyle, Label, MenuStrip,
     ToolStripControlHost, MouseButtons, ToolStripMenuItem, TextRenderer
 )
 clr.AddReference('System.Drawing')
@@ -13,6 +13,9 @@ from view.cell import Cell
 
 class GameWindow(Form):
     def __init__(self, rows, columns):
+        self.Text = 'Minesweeper'
+        self.FormBorderStyle = FormBorderStyle.Fixed3D
+        self.CenterToScreen()
         self._indent_top = 50
         self._indent_left = 10
         self._indent_right = 10
@@ -22,15 +25,12 @@ class GameWindow(Form):
         self._cells = []
         self._rows = rows
         self._columns = columns
-        self.FormBorderStyle = FormBorderStyle.Fixed3D
+        self.Size = self._generate_window_size(rows, columns)
         self._initialize_components()
-        self.CenterToScreen()
 
-        self._new_game_handlers = []
 
     def _initialize_components(self):
-        self.MainMenuStrip = self._generate_menu_strip()
-        self.Size = self._generate_window_size()
+        self._generate_menu_strip()
         self._create_buttons()
 
         self._flags_description = Label()
@@ -79,6 +79,8 @@ class GameWindow(Form):
         self._hard.Click += self._on_new_game_click
         new_game.DropDownItems.Add(self._hard)
 
+        self._new_game_handlers = []
+
         self.checkBox = CheckBox()
         self.checkBox.Text = "Nightmare"
         self.checkBox.Size = Size(100, 20)
@@ -91,11 +93,9 @@ class GameWindow(Form):
         self._exit.Click += self._exit_game
         file_item.DropDownItems.Add(self._exit)
 
-        return menu_strip
-
-    def _generate_window_size(self):
-        width = self._indent_left + self._columns * self._cell_side + self._indent_right + 16  # 10
-        height = self._indent_top + self._rows * self._cell_side + self._indent_bottom + 39  # 33
+    def _generate_window_size(self, rows, columns):
+        width = self._indent_left + columns * self._cell_side + self._indent_right + 10
+        height = self._indent_top + rows * self._cell_side + self._indent_bottom + 33
         return Size(width, height)
 
     def _create_buttons(self):
@@ -141,5 +141,5 @@ class GameWindow(Form):
 
 
 if __name__ == '__main__':
-    game = GameWindow()
+    game = GameWindow(5, 10)
     game.ShowDialog()
