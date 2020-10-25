@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import clr
-from System import EventArgs
 clr.AddReference('System.Windows.Forms')
 from System.Windows.Forms import (
-    Button, CheckBox, Form, FormBorderStyle, FlatStyle, Label, MenuStrip,
-    ToolStripControlHost, MouseButtons, ToolStripMenuItem, TextRenderer
+    CheckBox, Form, FormBorderStyle, Label, MenuStrip,
+    ToolStripControlHost, ToolStripMenuItem, TextRenderer
 )
 clr.AddReference('System.Drawing')
-from System.Drawing import ContentAlignment, Size, Point, Color
+from System.Drawing import ContentAlignment, Size, Point
 from view.cell import Cell
 
 
@@ -25,20 +24,19 @@ class GameWindow(Form):
         self._cells = []
         self._rows = rows
         self._columns = columns
-        self.Size = self._generate_window_size(rows, columns)
+        self.ClientSize = self._generate_window_size(rows, columns)
         self._initialize_components()
-
 
     def _initialize_components(self):
         self._generate_menu_strip()
         self._create_buttons()
 
-        self._flags_description = Label()
-        self._flags_description.Parent = self
-        self._flags_description.Text = 'Flags:'
-        self._flags_description.Location = Point(10, 30)
-        self._flags_description.Size = TextRenderer.MeasureText(
-            self._flags_description.Text, self._flags_description.DefaultFont)
+        flags_description = Label()
+        flags_description.Parent = self
+        flags_description.Text = 'Flags:'
+        flags_description.Location = Point(10, 30)
+        flags_description.Size = TextRenderer.MeasureText(
+            flags_description.Text, flags_description.DefaultFont)
 
         self._result = Label()
         self._result.Parent = self
@@ -54,7 +52,7 @@ class GameWindow(Form):
         self._label_timer = Label()
         self._label_timer.Parent = self
         self._label_timer.TextAlign = ContentAlignment.MiddleRight
-        self._label_timer.Location = Point(self.Size.Width - 60, 30)
+        self._label_timer.Location = Point(self.Size.Width - 70, 30)
         self._label_timer.Size = Size(40, 20)
 
     def _generate_menu_strip(self):
@@ -94,8 +92,8 @@ class GameWindow(Form):
         file_item.DropDownItems.Add(self._exit)
 
     def _generate_window_size(self, rows, columns):
-        width = self._indent_left + columns * self._cell_side + self._indent_right + 10
-        height = self._indent_top + rows * self._cell_side + self._indent_bottom + 33
+        width = self._indent_left + columns * self._cell_side + self._indent_right
+        height = self._indent_top + rows * self._cell_side + self._indent_bottom
         return Size(width, height)
 
     def _create_buttons(self):
